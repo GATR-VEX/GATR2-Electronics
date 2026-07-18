@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "VexPorts") (type "KiCad") (uri "${KIPRJMOD}/VexPorts.pretty") (options "") (descr ""))
+)
