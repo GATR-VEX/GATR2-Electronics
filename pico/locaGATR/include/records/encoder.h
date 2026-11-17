@@ -1,7 +1,5 @@
 // encoder.h
-// A tracking wheel encoder's record data: its count since boot, i32. Counts
-// never reset; take differences. The record's port is the connector (0 = TW0).
-// Portable, shared with the Brain.
+// Tracking wheel encoder record: count since boot, i32. Portable.
 
 #pragma once
 #include <cstddef>

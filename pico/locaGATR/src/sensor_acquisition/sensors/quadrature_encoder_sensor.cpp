@@ -25,9 +25,8 @@ constexpr bool idsMatchIndex() {
 }
 static_assert(idsMatchIndex(), "ports::kQuadrature[i].id must be i");
 
-// Delta for a (previous state, new state) pair, indexed (prev << 2) | now.
-// State is (A << 1) | B. Illegal transitions, meaning both lines changed
-// between samples, contribute zero rather than guessing a direction.
+// Count change per (previous, new) state, indexed (prev << 2) | now. State is
+// (A << 1) | B. Both lines changing at once counts 0.
 constexpr int8_t kDelta[16] = {
     0, +1, -1, 0, -1, 0, 0, +1, +1, 0, 0, -1, 0, -1, +1, 0,
 };

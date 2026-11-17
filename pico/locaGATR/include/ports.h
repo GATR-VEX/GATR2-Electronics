@@ -1,7 +1,5 @@
 // ports.h
-// Control board V1 connectors (pcb/ControlBoard/ControlBoard_V1) and the
-// RP2040 GPIO pins behind each. One struct per kind of connector; a sensor
-// driver takes the kind it fits.
+// Control board V1 connectors and their RP2040 pins, one struct per kind.
 
 #pragma once
 #include <stdint.h>

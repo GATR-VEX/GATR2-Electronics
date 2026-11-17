@@ -1,6 +1,5 @@
-# locaGATR: the Brain end of the control board link, portable core and host
-# tests. Frames and records are the board firmware's own sources. pros/ holds
-# the Smart Port Io; PROS projects build it through brain/gatr2_brain.mk.
+# locaGATR Brain link: host build and tests. Frames and records come from the
+# board firmware.
 
 set(LOCAGATR_BOARD ${CMAKE_CURRENT_SOURCE_DIR}/../../pico/locaGATR)
 

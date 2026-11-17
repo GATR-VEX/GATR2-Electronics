@@ -1,6 +1,5 @@
 // firmware.h
-// The program behind main.cpp: the board's state and its steps. main.cpp only
-// calls these in order. Arduino only.
+// The steps main.cpp calls, in order. Arduino only.
 
 #pragma once
 
@@ -16,12 +15,10 @@ void begin();
 // Step 1: every sensor updated; its health and newest reading in the map.
 sensor_acquisition::SensorMap readSensors();
 
-// Step 2: bytes from the Brain, if any; each GET_READINGS answered from the
-// map. What was asked and answered, with the link totals.
+// Step 2: each GET_READINGS answered from the map.
 brainlink::Exchange answerBrain(const sensor_acquisition::SensorMap& sensors);
 
-// Step 3: one status line to USB per second, when a monitor is attached.
-// Nothing depends on it.
+// Step 3: a USB status line once a second. Optional.
 void logStatus(const sensor_acquisition::SensorMap& sensors, const brainlink::Exchange& brain);
 
 } // namespace firmware

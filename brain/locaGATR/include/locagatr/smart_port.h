@@ -1,6 +1,5 @@
 // smart_port.h
-// A V5 Smart Port as the link's Io, in generic serial mode. Header free of
-// PROS; source in pros/, PROS builds only.
+// A V5 Smart Port as the link's Io. Source in pros/.
 
 #pragma once
 #include <cstdint>

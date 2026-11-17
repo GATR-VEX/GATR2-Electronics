@@ -1,8 +1,5 @@
 // sensor_acquisition.h
-// Step 1 of the loop. Every board sensor has one shape, Sensor: it overrides
-// write and any other hook it needs; the rest do nothing. readAll updates
-// every sensor and collects its health and newest reading into one
-// SensorMap; later steps take the map and grab what they need. Portable.
+// Step 1 of the loop: every Sensor updated into one SensorMap. Portable.
 
 #pragma once
 #include <array>

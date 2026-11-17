@@ -1,7 +1,6 @@
 // sensor_types.h
-// Sensor types in READINGS records. One per type of sensor, never reused; 0
-// is never a type. The same table is in the README ("Sensor types"); add a
-// row there with every new type. Portable, shared with the Brain.
+// Sensor types in READINGS records, never reused; 0 is not a type. Same table
+// as the README. Portable.
 
 #pragma once
 #include <stdint.h>

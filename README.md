@@ -1,58 +1,45 @@
 # GATR2 Electronics
 
-Sensor hardware for a VEX U robot: the circuit boards, the control board
-firmware, and the Brain library that talks to the control board.
+Sensor hardware for a VEX U robot: circuit boards, control board firmware, and
+the Brain library that talks to the control board.
 
 ```
 tracking wheels (TW0, TW1, TW2) --> control board --RS-485, one Smart Port--> V5 Brain
 IMU board (optional) -------------^   (Pico)             VEX IMU (optional) --^
 ```
 
-The control board reads every sensor as fast as it can and keeps the latest
-readings. When the Brain asks, it answers with all of them in one reply. The
-Brain turns the readings into a pose, with the Localizer in GATR2-Override.
+The control board keeps the latest reading of every sensor and sends them all
+when the Brain asks. The Brain turns them into a pose (locaGATR in
+GATR2-Override). Heading comes from either the [IMU board](pcb/IMU/README.md)
+on the control board (not read by the firmware yet) or a VEX Inertial Sensor
+on the Brain.
 
-Heading comes from an IMU, which can sit on either side depending on which one
-the robot uses: the [IMU board](pcb/IMU/README.md) plugs into the control board
-and is read there like any other sensor, or a VEX Inertial Sensor plugs into
-the Brain and is read there. The control board firmware does not read the IMU
-board yet.
-
-Status: the firmware and the Brain library are host tested. Neither has run on
-a control board yet.
-
-## What is here
+Host tested; not run on a control board yet.
 
 | Folder | What |
 |---|---|
-| [pico/locaGATR](pico/locaGATR/README.md) | Control board firmware: reads the sensors, answers the Brain over RS-485. Adding a sensor is a few files; the README walks through it |
-| [brain/locaGATR](brain/locaGATR/README.md) | Brain library for PROS: asks the control board for its readings and decodes them |
-| [pcb/ControlBoard](pcb/ControlBoard/README.md) | The control board: a Raspberry Pi Pico, three encoder connectors, an IMU connector and an RS-485 transceiver to one Smart Port |
-| [pcb/IMU](pcb/IMU/README.md) | Optional IMU board on a cable to the control board |
-| [pcb/MagneticEncoder](pcb/MagneticEncoder/README.md) | Compact tracking wheel encoders |
-| [docs](docs/README.md) | Component names and the PCB contribution guide |
+| [pico/locaGATR](pico/locaGATR/README.md) | Control board firmware |
+| [brain/locaGATR](brain/locaGATR/README.md) | Brain library: the link to the control board |
+| [pcb/ControlBoard](pcb/ControlBoard/README.md) | Control board: Pico, three encoder connectors, IMU connector, RS-485 to one Smart Port |
+| [pcb/IMU](pcb/IMU/README.md) | Optional IMU board |
+| [pcb/MagneticEncoder](pcb/MagneticEncoder/README.md) | Tracking wheel encoders |
+| [docs](docs/README.md) | Component names, PCB contribution guide |
 
-The live pose viewer, spectaGATR, lives with the robot code in GATR2-Override.
+## Firmware
 
-## Control board firmware
-
-Needs [PlatformIO](https://platformio.org/). From `pico/locaGATR`, with the
-Pico on USB:
+Needs [PlatformIO](https://platformio.org/). From `pico/locaGATR`:
 
 ```sh
 pio run                 # build
 pio run -t upload       # flash (hold BOOTSEL the first time)
-pio device monitor      # status line once a second
+pio device monitor      # status line
 ```
-
-The board runs a Raspberry Pi Pico. The firmware also builds for a Pico 2
-(`pio run -e control_board_v1_pico2`); that has not been tried on hardware.
 
 ## Host tests
 
-Needs CMake 3.16 or newer and a C++17 compiler. On Windows that is MSYS2
-ucrt64 GCC, with `C:\msys64\ucrt64\bin` first on PATH, and `-G "MinGW
-Makefiles"` added to the first command of each block.
+CMake 3.16+ and a C++17 compiler. Windows: MSYS2 ucrt64 with
+`C:\msys64\ucrt64\bin` first on PATH, and `-G "MinGW Makefiles"` on each
+first command.
 
 ```sh
 cmake -S pico/locaGATR/tests -B build-locagatr-board-tests
@@ -64,14 +51,15 @@ cmake --build build-brain --parallel
 ctest --test-dir build-brain --output-on-failure
 ```
 
-## Using the Brain library in a PROS project
+## Brain library in a PROS project
 
-Clone this repository next to the robot code and include
-[brain/gatr2_brain.mk](brain/gatr2_brain.mk) from the PROS project's
-`Makefile`; the file's header shows the lines. The [Brain README](brain/README.md)
-has the details.
+Clone this repo next to the robot code and include
+[brain/gatr2_brain.mk](brain/gatr2_brain.mk) from the project `Makefile`; see
+the [Brain README](brain/README.md).
 
 ## Contributing
 
-New boards and board revisions follow the
-[PCB contribution guide](docs/contributing/README.md).
+Changes reach `main` only through a PR: threads resolved, `build` passing,
+up to date, one code owner approval, merged by the owner. The rules are on
+GitHub under Settings, Rules.
+New boards and revisions: [PCB contribution guide](docs/contributing/README.md).

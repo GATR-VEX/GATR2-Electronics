@@ -1,10 +1,7 @@
 # gatr2_brain.mk
-# GATR2 Brain libraries for a PROS project, compiled in place from this
-# repository into $(BINDIR)/gatr2/:
-#   locagatr    locaGATR control board link: Link and the Smart Port Io, with
-#               the board firmware's own frame and record files
-# Include it twice from the project Makefile, before common.mk (sources,
-# objects, include paths) and after it (compile rules):
+# Brain libraries from this repo for a PROS project, built into $(BINDIR)/gatr2/.
+#   locagatr  the control board link
+# Include it on both sides of common.mk:
 #
 #   GATR2_ROOT ?= ../..
 #   GATR2_BRAIN_LIBS := locagatr
@@ -22,7 +19,7 @@ GATR2_ROOT ?= ../..
 # Libraries to build.
 GATR2_BRAIN_LIBS ?= locagatr
 
-# Sources per library, listed explicitly.
+# Sources per library.
 GATR2_SRC_locagatr := \
 	$(GATR2_ROOT)/brain/locaGATR/src/link.cpp \
 	$(GATR2_ROOT)/brain/locaGATR/pros/smart_port.cpp \
@@ -41,9 +38,7 @@ else
 
 GATR2_WARNFLAGS ?= -Wall -Wextra
 
-# Own compile rule. common.mk's dependency steps (DEPFLAGS, mv of the .Td file)
-# assume sources under src/ and would write over the library sources.
-# Dependency files go next to the objects.
+# Own compile rule: the common.mk one assumes sources under src/.
 define gatr2_src_rule
 $(patsubst $(GATR2_ROOT)/%,$(BINDIR)/gatr2/%.o,$1): $1
 	$(VV)mkdir -p $$(dir $$@)

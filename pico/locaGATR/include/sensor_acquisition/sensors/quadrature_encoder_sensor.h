@@ -1,6 +1,6 @@
 // quadrature_encoder_sensor.h
-// A tracking wheel encoder on a quadrature connector: interrupt-driven x4
-// decode, the count since boot as an encoder record. Arduino only.
+// Tracking wheel encoder on a quadrature connector, x4 decode in interrupts.
+// Arduino only.
 
 #pragma once
 #include <stdint.h>

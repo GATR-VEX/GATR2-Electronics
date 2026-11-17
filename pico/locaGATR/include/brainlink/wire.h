@@ -1,28 +1,18 @@
 // wire.h
-// Brain <-> control board frames on the RS-485 Smart Port. The Brain is the
-// only initiator: it asks for the readings and the board answers with one
-// READINGS frame. Integers little endian. Portable, no I/O, so the Brain can
-// compile this same file.
+// Brain <-> control board frames on RS-485. The Brain asks, the board
+// answers. Little endian. Portable; the Brain compiles this file too.
 //
 //   frame      0xA7 0x4C | type u8 | id u8 | length u8 | payload | crc u16
-//   crc        CRC-16/CCITT-FALSE over every byte from the first sync byte
-//              through the payload
+//   crc        CRC-16/CCITT-FALSE, sync bytes through payload
 //
 //   type 0x10  GET_READINGS  Brain -> board, no payload
-//   type 0x90  READINGS      board -> Brain, payload:
-//                            boot_id u16   random, new on every board boot
-//                            records, one per sensor, back to back:
+//   type 0x90  READINGS      board -> Brain:
+//                            boot_id u16, new every boot
+//                            then one record per sensor:
 //                              sensor_type u8 | port u8 | health u8 | size u8 | age_us u32 | data[size]
 //
-// One record per sensor the board has, every reply, with or without data.
-// sensor_type: what sort of sensor, records/sensor_types.h. port: the board
-// connector it is on, ports.h. health: Health below. size 0: no reading yet,
-// age_us 0. age_us: since the sensor was sampled, as of the reply being built.
-// data: the sensor type's own format, under records/. A reader skips sensor
-// types it does not know by their size.
-//
-// id: chosen by the Brain per request and echoed in the reply, so a late
-// reply is never taken as the answer to a later request.
+// size 0: no reading yet. data: per sensor type, records/. Unknown types are
+// skipped by size. id: set by the Brain, echoed in the reply.
 
 #pragma once
 #include <array>

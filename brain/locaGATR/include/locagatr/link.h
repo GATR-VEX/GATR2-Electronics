@@ -1,9 +1,7 @@
 // link.h
-// The Brain end of the control board link: one GET_READINGS, then wait for
-// its READINGS or a timeout, never a second request in flight. Owned by one
-// task. Frames and records are the board firmware's own files
-// (pico/locaGATR: brainlink/wire.h, records/). Portable: I/O and time come in
-// through Io, so tests run it against a fake board.
+// The Brain end of the control board link, one request in flight at a time.
+// Uses the board firmware's brainlink/wire.h and records/. Portable: I/O and
+// time through Io.
 
 #pragma once
 #include <cstddef>

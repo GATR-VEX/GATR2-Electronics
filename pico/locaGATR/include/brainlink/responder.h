@@ -1,7 +1,5 @@
 // responder.h
-// The board end of the link: GET_READINGS in, one READINGS reply out with a
-// record per SensorMap entry. Portable, no Arduino: the caller moves the
-// bytes.
+// The board end of the link: GET_READINGS in, READINGS out. Portable.
 
 #pragma once
 #include <stddef.h>
