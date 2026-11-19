@@ -1,18 +1,10 @@
 // wire.h
-// Brain <-> control board frames on RS-485. The Brain asks, the board
-// answers. Little endian. Portable; the Brain compiles this file too.
+// Brain <-> control board frames. Spec: docs/protocol.md. Portable; the
+// Brain compiles this file too.
 //
-//   frame      0xA7 0x4C | type u8 | id u8 | length u8 | payload | crc u16
-//   crc        CRC-16/CCITT-FALSE, sync bytes through payload
-//
-//   type 0x10  GET_READINGS  Brain -> board, no payload
-//   type 0x90  READINGS      board -> Brain:
-//                            boot_id u16, new every boot
-//                            then one record per sensor:
-//                              sensor_type u8 | port u8 | health u8 | size u8 | age_us u32 | data[size]
-//
-// size 0: no reading yet. data: per sensor type, records/. Unknown types are
-// skipped by size. id: set by the Brain, echoed in the reply.
+//   frame     0xA7 0x4C | type u8 | id u8 | length u8 | payload | crc u16
+//   READINGS  boot_id u16 | record | record | ...
+//   record    sensor_type u8 | port u8 | health u8 | size u8 | age_us u32 | data[size]
 
 #pragma once
 #include <array>

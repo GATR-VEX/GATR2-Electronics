@@ -71,35 +71,14 @@ interrupts, so no edge is missed.
 | GET_READINGS | READINGS: boot id, then one record per sensor |
 | anything else | ignored and counted |
 
-Frames: [wire.h](include/brainlink/wire.h). Record data per sensor type:
-[records/](include/records/), compiled on the Brain too. A new boot id means
-the board restarted. Encoder counts never reset; the Brain takes differences.
-
-The board waits 200 us after a request, drives `EN`, sends, then drops `EN`.
-Three encoders make a 45 byte reply, 3.9 ms at 115200 baud; more sensors need
-a higher baud on both ends. Payload is capped at 64 bytes, overflow counted
-in `left_out`.
-
-## Sensor types
-
-Never reused; 0 is not a type. Code:
-[records/sensor_types.h](include/records/sensor_types.h).
-
-| Type | Name | Connector | Data |
-|---|---|---|---|
-| `0x01` | Encoder | `ports::Quadrature` | count since boot, i32 ([encoder.h](include/records/encoder.h)) |
-
-| Health | Meaning |
-|---|---|
-| 0 starting | no reading yet |
-| 1 ok | current |
-| 2 stale | nothing new lately |
-| 3 retrying | lost, trying again |
-| 4 failed | quick retries used up |
+Frames, records, sensor types, health and timing:
+[protocol](../../docs/protocol.md). Code: [wire.h](include/brainlink/wire.h)
+and [records/](include/records/), compiled on the Brain too.
 
 ## Adding a sensor
 
-1. Its record: a type in `records/sensor_types.h`, a row above, and a
+1. Its record: a type in `records/sensor_types.h`, a row in the
+   [protocol](../../docs/protocol.md) sensor types table, and a
    `records/<name>` pair with `write` and `read`. Copy `records/encoder.h`.
 2. Its driver: `sensor_acquisition/sensors/<what>_sensor`, deriving from
    `Sensor`, with a nested `Config` that starts with its connector:

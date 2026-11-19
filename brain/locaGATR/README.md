@@ -27,9 +27,10 @@ reply can't overlap the next request.
 | New boot id | `restarted` true: the board's counts start over |
 | Record with no reading | `encoderCount()` empty for that port |
 
-`stats()` has the counts and the last round trip. Frames and records are the
-firmware's own [wire.h](../../pico/locaGATR/include/brainlink/wire.h) and
-[records/](../../pico/locaGATR/include/records/).
+`stats()` has the counts and the last round trip. Format:
+[protocol](../../docs/protocol.md), code shared with the firmware
+([wire.h](../../pico/locaGATR/include/brainlink/wire.h),
+[records/](../../pico/locaGATR/include/records/)).
 
 ## Check on the bench
 
