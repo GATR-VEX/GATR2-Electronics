@@ -28,7 +28,7 @@ pio run -t upload
 pio device monitor
 ```
 
-Pico 2: `pio run -e control_board_v1_pico2` (not run on hardware).
+This builds for a Pico 2. Original Pico: `pio run -e control_board_v1`.
 
 Status line, once a second:
 
