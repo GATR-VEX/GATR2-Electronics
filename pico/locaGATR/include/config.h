@@ -23,6 +23,11 @@ inline sensor_acquisition::Sensor* const kSensors[] = {&tw0, &tw1, &tw2};
 constexpr uint32_t kBaud         = 115200;
 constexpr uint32_t kTurnaroundUs = 200;
 
+// LED: slow blink running, fast blink while the Brain polls. Half periods.
+constexpr uint32_t kLedSlowMs    = 500;
+constexpr uint32_t kLedFastMs    = 100;
+constexpr uint32_t kBrainQuietMs = 1000; // no request for this long: slow again
+
 // USB status line, once a second.
 constexpr bool     kUsbDebug         = true;
 constexpr uint32_t kUsbBaud          = 115200;

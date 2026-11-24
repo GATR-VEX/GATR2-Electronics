@@ -9,8 +9,12 @@ void loop() {
     const sensor_acquisition::SensorMap sensors = firmware::readSensors();      // 1. every sensor into one map
     const brainlink::Exchange           brain   = firmware::answerBrain(sensors); // 2. GET_READINGS answered
     firmware::logStatus(sensors, brain);                                          // 3. USB status, optional
+    firmware::blinkLed(brain);                                                    // 4. LED
 }
 ```
+
+The Pico's LED blinks slowly while the firmware runs and fast while the Brain
+is polling. Off or stuck: not running.
 
 Brain end: [brain/locaGATR](../../brain/locaGATR/README.md).
 
@@ -104,7 +108,7 @@ and [records/](include/records/), compiled on the Brain too.
 
 Control board V1 ([ports.h](include/ports.h)): TW0 GP0/GP1, TW1 GP2/GP3, TW2
 GP4/GP5, IMU1 I2C1 GP6/GP7 with interrupts GP8/GP9 (not read yet), Brain
-UART0 GP12/GP13 with `EN` on GP11.
+UART0 GP12/GP13 with `EN` on GP11, LED GP25 (on the Pico).
 
 ## Layout
 

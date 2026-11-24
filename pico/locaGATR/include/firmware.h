@@ -9,7 +9,7 @@
 namespace firmware
 {
 
-// Starts USB status, the RS-485 link and every sensor.
+// Starts USB status, the LED, the RS-485 link and every sensor.
 void begin();
 
 // Step 1: every sensor updated; its health and newest reading in the map.
@@ -20,5 +20,8 @@ brainlink::Exchange answerBrain(const sensor_acquisition::SensorMap& sensors);
 
 // Step 3: a USB status line once a second. Optional.
 void logStatus(const sensor_acquisition::SensorMap& sensors, const brainlink::Exchange& brain);
+
+// Step 4: the LED. Slow blink running, fast blink while the Brain polls.
+void blinkLed(const brainlink::Exchange& brain);
 
 } // namespace firmware

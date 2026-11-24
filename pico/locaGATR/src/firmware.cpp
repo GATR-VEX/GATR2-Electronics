@@ -46,6 +46,7 @@ void begin() {
     if (cfg::kUsbDebug) {
         Serial.begin(cfg::kUsbBaud);
     }
+    pinMode(ports::kLed, OUTPUT);
     brainlink::begin(cfg::kBaud);
     sensor_acquisition::beginAll(cfg::kSensors, kSensorCount);
     g_boot_id = randomBootId();
@@ -95,6 +96,19 @@ void logStatus(const sensor_acquisition::SensorMap& sensors, const brainlink::Ex
     if (Serial.availableForWrite() >= static_cast<int>(n)) {
         Serial.write(reinterpret_cast<const uint8_t*>(line.text), n);
     }
+}
+
+void blinkLed(const brainlink::Exchange& brain) {
+    static uint32_t last_request_ms = 0;
+    static bool     polled          = false;
+    const uint32_t  now_ms          = millis();
+    if (brain.answered > 0) {
+        last_request_ms = now_ms;
+        polled          = true;
+    }
+    const bool     fast = polled && now_ms - last_request_ms < cfg::kBrainQuietMs;
+    const uint32_t half = fast ? cfg::kLedFastMs : cfg::kLedSlowMs;
+    digitalWrite(ports::kLed, (now_ms / half) % 2 ? HIGH : LOW);
 }
 
 } // namespace firmware

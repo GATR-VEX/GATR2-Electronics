@@ -39,6 +39,7 @@ constexpr Quadrature kTW1{1, "TW1", 2, 3};
 constexpr Quadrature kTW2{2, "TW2", 4, 5};
 constexpr I2c        kIMU1{3, "IMU1", 6, 7, 8, 9}; // I2C1; INT1 accel, INT3 gyro on IMU v2
 constexpr Rs485      kBrain{11, 12, 13};
+constexpr uint8_t    kLed = 25; // on the Pico itself, Pico and Pico 2
 
 // Every quadrature connector, kQuadrature[i].id == i.
 constexpr Quadrature kQuadrature[] = {kTW0, kTW1, kTW2};
