@@ -110,6 +110,16 @@ if the first bench test shows reflections at the baud rate finally chosen.
 - Encoder signal integrity through the 100 ohm series resistors at the counting
   rate of the fastest wheel.
 
+## For the next revision
+
+- Pico at the board edge, USB connector overhanging, so the cable goes in
+  straight without levering the Pico in its socket.
+- A diode (Schottky, or an ideal diode such as the LM66100) between the buck
+  output and VSYS. On V1, USB alone back-feeds the 5 V rail into the buck
+  module, so the buck has to be unplugged when only USB is connected.
+- LEDs on the 12 V and 3.3 V rails.
+- A TVS on the Smart Port +12 V pin.
+
 ## Files
 
 - [KiCad project](ControlBoard/ControlBoard.kicad_pro), [root schematic](ControlBoard/ControlBoard.kicad_sch),
