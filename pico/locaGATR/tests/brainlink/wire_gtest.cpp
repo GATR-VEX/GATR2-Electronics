@@ -29,17 +29,6 @@ TEST(Wire, Crc16CcittFalseCheckValue) {
     EXPECT_EQ(crc16(check, sizeof(check)), 0x29B1);
 }
 
-TEST(Wire, GetReadingsRoundTrip) {
-    const Frame f = encodeGetReadings(17);
-    EXPECT_EQ(f.size, kHeaderSize + kCrcSize);
-
-    const std::vector<Message> got = scan(f.bytes.data(), f.size);
-    ASSERT_EQ(got.size(), 1u);
-    EXPECT_TRUE(isGetReadings(got[0]));
-    EXPECT_EQ(got[0].id, 17);
-    EXPECT_FALSE(decodeReadings(got[0]));
-}
-
 TEST(Wire, RecordsRoundTripInOrder) {
     const uint8_t  a[] = {1, 2, 3, 4};
     const uint8_t  b[] = {0xFF};
@@ -108,11 +97,12 @@ TEST(Wire, PayloadThatDoesNotSplitIntoRecordsIsRejected) {
 }
 
 TEST(Wire, ScannerResyncsAfterJunkAndCorruption) {
+    // Junk, an unknown type, then a frame changed after its crc was computed.
     std::vector<uint8_t> stream = {0x00, 0xA7, 0x11, 0xA7, 0x4C, 0x10, 0x01, 0x00, 0xFF, 0xFF};
-    Frame                bad    = encodeGetReadings(1);
-    bad.bytes[3] ^= 0x01; // id changed after the crc was computed
+    Frame                bad    = ReadingsWriter(7).frame(1);
+    bad.bytes[3] ^= 0x01;
     stream.insert(stream.end(), bad.bytes.begin(), bad.bytes.begin() + bad.size);
-    const Frame good = encodeGetReadings(2);
+    const Frame good = ReadingsWriter(7).frame(2);
     stream.insert(stream.end(), good.bytes.begin(), good.bytes.begin() + good.size);
 
     Scanner              scanner;
@@ -134,7 +124,7 @@ TEST(Wire, HealthNames) {
 }
 
 TEST(Wire, BackToBackFramesInOneRead) {
-    const Frame a = encodeGetReadings(5);
+    const Frame a = ReadingsWriter(0).frame(5);
     const Frame b = ReadingsWriter(0).frame(6);
 
     std::vector<uint8_t> stream(a.bytes.begin(), a.bytes.begin() + a.size);

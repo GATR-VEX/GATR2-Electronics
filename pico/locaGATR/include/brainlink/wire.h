@@ -27,8 +27,7 @@ constexpr std::size_t kMaxRecordData = kMaxPayload - kBootIdSize - kRecordHeader
 constexpr std::size_t kMaxRecords    = (kMaxPayload - kBootIdSize) / kRecordHeader;
 
 enum class Type : uint8_t {
-    kGetReadings = 0x10,
-    kReadings    = 0x90,
+    kReadings = 0x90,
 };
 
 enum class Health : uint8_t {
@@ -64,8 +63,6 @@ struct Readings {
 
 uint16_t crc16(const uint8_t* data, std::size_t size);
 
-Frame encodeGetReadings(uint8_t id);
-
 // Builds a READINGS frame one record at a time.
 class ReadingsWriter {
   public:
@@ -84,13 +81,11 @@ class ReadingsWriter {
 
 // A checked frame: type, id and payload, as the scanner found it.
 struct Message {
-    Type                             type = Type::kGetReadings;
+    Type                             type = Type::kReadings;
     uint8_t                          id   = 0;
     std::array<uint8_t, kMaxPayload> payload{};
     std::size_t                      length = 0;
 };
-
-bool isGetReadings(const Message& message);
 
 // Nullopt for a wrong type or a payload that does not split into records.
 std::optional<Readings> decodeReadings(const Message& message);

@@ -20,15 +20,6 @@ std::optional<Io> openSmartPort(uint8_t port, int32_t baud) {
         return std::nullopt;
     }
     Io io;
-    io.write = [port](const uint8_t* data, std::size_t size) {
-        const int32_t room = pros::c::serial_get_write_free(port);
-        if (room == PROS_ERR || room < static_cast<int32_t>(size)) {
-            return false;
-        }
-        const int32_t written =
-            pros::c::serial_write(port, const_cast<uint8_t*>(data), static_cast<int32_t>(size));
-        return written == static_cast<int32_t>(size);
-    };
     // PROS_ERR is INT32_MAX, not negative.
     io.read = [port](uint8_t* data, std::size_t capacity) -> std::size_t {
         const int32_t count = pros::c::serial_read(port, data, static_cast<int32_t>(capacity));
@@ -37,8 +28,7 @@ std::optional<Io> openSmartPort(uint8_t port, int32_t baud) {
         }
         return std::min(static_cast<std::size_t>(count), capacity);
     };
-    io.now_us  = [] { return pros::micros(); };
-    io.wait_us = [](uint32_t us) { pros::delay(std::max<uint32_t>(1, us / 1000)); };
+    io.now_us = [] { return pros::micros(); };
     return io;
 }
 

@@ -24,7 +24,7 @@ endif()
 # Test files, one folder per part as under src/.
 set(TEST_SOURCES
     brainlink/wire_gtest.cpp
-    brainlink/responder_gtest.cpp
+    brainlink/streamer_gtest.cpp
     records/encoder_gtest.cpp
     sensor_acquisition/sensor_acquisition_gtest.cpp
 )
@@ -32,7 +32,7 @@ set(TEST_SOURCES
 # Sources under test.
 set(CODE_UNDER_TEST
     ../src/brainlink/wire.cpp
-    ../src/brainlink/responder.cpp
+    ../src/brainlink/streamer.cpp
     ../src/records/encoder.cpp
     ../src/sensor_acquisition/sensor_acquisition.cpp
 )

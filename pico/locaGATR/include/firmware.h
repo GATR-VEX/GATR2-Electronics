@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "brainlink/responder.h"
+#include "brainlink/streamer.h"
 #include "sensor_acquisition/sensor_acquisition.h"
 
 namespace firmware
@@ -15,13 +15,13 @@ void begin();
 // Step 1: every sensor updated; its health and newest reading in the map.
 sensor_acquisition::SensorMap readSensors();
 
-// Step 2: each GET_READINGS answered from the map.
-brainlink::Exchange answerBrain(const sensor_acquisition::SensorMap& sensors);
+// Step 2: a READINGS frame to the Brain once per stream period.
+const brainlink::Stats& streamToBrain(const sensor_acquisition::SensorMap& sensors);
 
 // Step 3: a USB status line once a second. Optional.
-void logStatus(const sensor_acquisition::SensorMap& sensors, const brainlink::Exchange& brain);
+void logStatus(const sensor_acquisition::SensorMap& sensors, const brainlink::Stats& link);
 
-// Step 4: the LED. Slow blink running, fast blink while the Brain polls.
-void blinkLed(const brainlink::Exchange& brain);
+// Step 4: the LED blinks while the loop runs.
+void blinkLed();
 
 } // namespace firmware

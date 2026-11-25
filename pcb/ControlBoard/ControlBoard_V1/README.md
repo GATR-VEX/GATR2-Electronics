@@ -91,9 +91,8 @@ and B at the jack.
 `U1` runs from 3.3 V with 1 uF decoupling. `DE` and `/RE` are tied together on
 `EN` (GP11) with a 10 k pulldown, so the transceiver listens whenever the Pico
 is not driving the pin, including during boot and when the firmware has not
-started. The firmware raises `EN` only for the duration of a reply, as the
-Brain's [locaGATR](../../../brain/locaGATR/README.md) protocol requires: the
-Brain is the only initiator and the board only answers.
+started. The firmware then holds `EN` high: the board streams its readings and
+the Brain never transmits ([protocol](../../../docs/protocol.md)).
 
 There is no termination or bias network on A and B. The THVD1400 has an
 internal receiver fail-safe for open, shorted and idle buses, and the Smart

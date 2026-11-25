@@ -14,8 +14,8 @@ Brain +12 V from the port --> 12 V to 5 V module --> Pico and 3.3 V regulator
 ```
 
 The Brain side of the link is [brain/locaGATR](../../brain/locaGATR/README.md):
-the Brain polls, the board answers with the latest sensor readings, one
-request in flight. The board firmware is
+the board streams the latest sensor readings and the Brain only listens. The
+board firmware is
 [pico/locaGATR](../../pico/locaGATR/README.md).
 
 ## Iterations

@@ -19,14 +19,13 @@ inline sensor_acquisition::QuadratureEncoderSensor tw2({ports::kTW2});
 // Updated and reported in this order.
 inline sensor_acquisition::Sensor* const kSensors[] = {&tw0, &tw1, &tw2};
 
-// Link to the Brain. kTurnaroundUs: wait after a request before replying.
-constexpr uint32_t kBaud         = 115200;
-constexpr uint32_t kTurnaroundUs = 200;
+// Link to the Brain: one READINGS frame every kStreamPeriodUs. Same baud on
+// the Brain (gatr2::Robot::board_baud).
+constexpr uint32_t kBaud           = 921600;
+constexpr uint32_t kStreamPeriodUs = 2000; // 500 frames/s; 3 encoders take 0.5 ms each
 
-// LED: slow blink running, fast blink while the Brain polls. Half periods.
-constexpr uint32_t kLedSlowMs    = 500;
-constexpr uint32_t kLedFastMs    = 100;
-constexpr uint32_t kBrainQuietMs = 1000; // no request for this long: slow again
+// LED half period: on, then off.
+constexpr uint32_t kLedHalfMs = 500;
 
 // USB status line, once a second.
 constexpr bool     kUsbDebug         = true;

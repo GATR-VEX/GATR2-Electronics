@@ -28,10 +28,7 @@ Frame frame(Type type, uint8_t id, const uint8_t* payload, std::size_t length) {
     return f;
 }
 
-bool knownType(uint8_t type) {
-    return type == static_cast<uint8_t>(Type::kGetReadings) ||
-           type == static_cast<uint8_t>(Type::kReadings);
-}
+bool knownType(uint8_t type) { return type == static_cast<uint8_t>(Type::kReadings); }
 
 } // namespace
 
@@ -58,8 +55,6 @@ uint16_t crc16(const uint8_t* data, std::size_t size) {
     return crc;
 }
 
-Frame encodeGetReadings(uint8_t id) { return frame(Type::kGetReadings, id, nullptr, 0); }
-
 ReadingsWriter::ReadingsWriter(uint16_t boot_id) {
     putU16(payload_.data(), boot_id);
     size_ = kBootIdSize;
@@ -85,10 +80,6 @@ bool ReadingsWriter::add(uint8_t sensor_type, uint8_t port, Health health, uint3
 
 Frame ReadingsWriter::frame(uint8_t id) const {
     return brainlink::frame(Type::kReadings, id, payload_.data(), size_);
-}
-
-bool isGetReadings(const Message& message) {
-    return message.type == Type::kGetReadings && message.length == 0;
 }
 
 std::optional<Readings> decodeReadings(const Message& message) {

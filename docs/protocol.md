@@ -1,22 +1,22 @@
 # Control board protocol
 
-How the Brain and the control board talk. Code:
+How the control board sends its readings to the Brain. Code:
 [wire.h](../pico/locaGATR/include/brainlink/wire.h), compiled by both sides.
 
-The Brain asks, the board answers with the latest reading of every sensor.
-Nothing is resent: a lost or corrupted reply times out, and the next request
-gets newer data. Encoder counts are totals since boot, so a missed reply
-loses nothing.
+The board streams: every 2 ms it sends the latest reading of every sensor,
+without being asked. The Brain only listens and keeps the newest frame.
+Nothing is resent: a lost or corrupted frame is replaced by the next one.
+Encoder counts are totals since boot, so a lost frame loses nothing.
 
 ## Link
 
 | | |
 |---|---|
-| Wire | RS-485, half duplex, one V5 Smart Port |
-| Bytes | UART 8N1, 115200 baud (about 11.5 bytes per ms) |
+| Wire | RS-485, one V5 Smart Port. Only the board transmits |
+| Bytes | UART 8N1, 921600 baud (about 92 bytes per ms) |
 | Byte order | Little endian |
-| Board | Waits 200 us after a request, drives `EN`, sends, drops `EN` |
-| Brain | Waits up to 7 ms for the reply, one request at a time |
+| Board | Drives `EN` all the time; one READINGS frame every 2 ms |
+| Brain | Never transmits. Each tick reads what arrived and keeps the newest frame |
 
 ## Frame
 
@@ -30,17 +30,16 @@ Every message:
 |---|---|
 | `0xA7 0x4C` | Sync. Marks the start of a frame in the byte stream |
 | `type` | Which message, below |
-| `id` | Request number. Set by the Brain, copied into the reply. A reply with an old id is dropped |
+| `id` | Sequence number, one up per frame, wraps after 255. A gap means lost frames |
 | `length` | Payload bytes |
 | `crc` | CRC-16/CCITT-FALSE over sync through payload. A frame that fails it is dropped |
 
-At most 64 bytes of payload per reply.
+At most 64 bytes of payload per frame.
 
 ## Messages
 
 | Type | Name | Direction | Payload |
 |---|---|---|---|
-| `0x10` | GET_READINGS | Brain to board | none |
 | `0x90` | READINGS | board to Brain | below |
 
 ### READINGS
@@ -50,7 +49,7 @@ boot_id u16 | record | record | ...
 ```
 
 `boot_id` is random, new every boot. When it changes, the board restarted and
-its counts started over.
+its counts and sequence started over.
 
 Then one record per sensor:
 
@@ -88,14 +87,13 @@ Never reused; 0 is not a type. Code:
 
 ## Size and timing
 
-The payload is capped at 64 bytes, the whole reply, not per sensor. `length`
-is one byte, so the format allows up to 255; 64 keeps the worst case reply
-around 6 ms at 115200 baud.
+The payload is capped at 64 bytes per frame, not per sensor. `length` is one
+byte, so the format allows up to 255.
 
-| Reply | Payload | Frame | Time at 115200 |
-|---|---|---|---|
-| 3 encoders | 2 + 3 × 12 = 38 | 45 bytes | 3.9 ms |
-| Full | 64 | 71 bytes | 6.2 ms |
+| Frame | Payload | Frame | Time at 921600 | Share of a 2 ms period |
+|---|---|---|---|---|
+| 3 encoders | 2 + 3 x 12 = 38 | 45 bytes | 0.49 ms | 24% |
+| Full | 64 | 71 bytes | 0.77 ms | 39% |
 
 Records that do not fit are left out and counted in the board's `left_out`.
-More sensors need a higher baud on both ends, or a larger cap.
+More sensors need a larger cap or a longer period.

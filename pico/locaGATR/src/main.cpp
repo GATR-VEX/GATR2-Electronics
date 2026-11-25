@@ -9,7 +9,7 @@ void setup() { firmware::begin(); }
 
 void loop() {
     const sensor_acquisition::SensorMap sensors = firmware::readSensors();
-    const brainlink::Exchange           brain   = firmware::answerBrain(sensors);
-    firmware::logStatus(sensors, brain); // optional
-    firmware::blinkLed(brain);
+    const brainlink::Stats&             link    = firmware::streamToBrain(sensors);
+    firmware::logStatus(sensors, link); // optional
+    firmware::blinkLed();
 }

@@ -1,6 +1,6 @@
-// responder.cpp
+// streamer.cpp
 
-#include "brainlink/responder.h"
+#include "brainlink/streamer.h"
 
 namespace brainlink
 {
@@ -17,8 +17,8 @@ uint32_t ageUs(uint64_t sampled_us, uint64_t now_us) {
 
 } // namespace
 
-Frame reply(uint8_t id, const sensor_acquisition::SensorMap& sensors, uint16_t boot_id,
-                  uint64_t now_us, uint32_t& left_out) {
+Frame readingsFrame(uint8_t sequence, const sensor_acquisition::SensorMap& sensors,
+                    uint16_t boot_id, uint64_t now_us, uint32_t& left_out) {
     ReadingsWriter writer(boot_id);
     for (size_t i = 0; i < sensors.count; ++i) {
         const sensor_acquisition::SensorEntry& e = sensors.entries[i];
@@ -31,7 +31,19 @@ Frame reply(uint8_t id, const sensor_acquisition::SensorMap& sensors, uint16_t b
             ++left_out;
         }
     }
-    return writer.frame(id);
+    return writer.frame(sequence);
+}
+
+std::optional<Frame> Streamer::next(const sensor_acquisition::SensorMap& sensors,
+                                    uint16_t boot_id, uint64_t now_us) {
+    if (sent_ && now_us - last_us_ < period_us_) {
+        return std::nullopt;
+    }
+    // Keep the period from the schedule, not from when the loop came round.
+    last_us_ = sent_ && now_us - last_us_ < 2ull * period_us_ ? last_us_ + period_us_ : now_us;
+    sent_    = true;
+    ++stats_.frames;
+    return readingsFrame(sequence_++, sensors, boot_id, now_us, stats_.left_out);
 }
 
 } // namespace brainlink

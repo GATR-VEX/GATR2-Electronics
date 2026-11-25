@@ -14,91 +14,52 @@ namespace
 {
 
 constexpr std::size_t kReadChunk = 64;
+constexpr int         kMaxChunks = 64; // 4 KB per read(), so a flood cannot hold it
 
 } // namespace
 
 Link::Link(Io io, const Timing& timing) : io_(std::move(io)), timing_(timing) {}
 
-// Bytes left from before this request: late replies and echoes.
-void Link::drainInput() {
+Poll Link::read() {
+    poll_.updated   = false;
+    poll_.restarted = false;
+
     std::array<uint8_t, kReadChunk> buffer{};
-    while (true) {
+    for (int i = 0; i < kMaxChunks; ++i) {
         const std::size_t count = io_.read(buffer.data(), buffer.size());
         if (count == 0) {
-            return;
+            break;
         }
         scanner_.feed(buffer.data(), count, [this](const brainlink::Message& m) { onMessage(m); });
     }
-}
 
-Poll Link::transact() {
-    drainInput();
-
-    poll_.answered  = false;
-    poll_.restarted = false;
-
-    ++id_;
-    const brainlink::Frame request = brainlink::encodeGetReadings(id_);
-    ++stats_.requests;
-    if (!io_.write(request.bytes.data(), request.size)) {
-        ++stats_.write_failures;
-        return poll_;
-    }
-    sent_us_ = io_.now_us();
-    waiting_ = true;
-
-    // Read before checking the deadline, so a reply that landed during the last
-    // wait still counts.
-    std::array<uint8_t, kReadChunk> buffer{};
-    while (true) {
-        const std::size_t count = io_.read(buffer.data(), buffer.size());
-        if (count > 0) {
-            scanner_.feed(buffer.data(), count,
-                          [this](const brainlink::Message& m) { onMessage(m); });
-        }
-        if (poll_.answered || io_.now_us() - sent_us_ >= timing_.reply_timeout_us) {
-            break;
-        }
-        if (count == 0) {
-            io_.wait_us(timing_.read_wait_us);
-        }
-    }
-    waiting_ = false;
-
-    if (poll_.answered) {
-        misses_ = 0;
-    } else {
-        ++stats_.timeouts;
-        ++misses_;
-        io_.wait_us(timing_.guard_us); // a late reply ends before the next request
-    }
-    poll_.fresh      = contact_ && misses_ < timing_.misses_until_stale;
+    poll_.fresh      = contact_ && io_.now_us() - last_frame_us_ < timing_.stale_us;
     stats_.bad_bytes = scanner_.stats().skipped;
     return poll_;
 }
 
 void Link::onMessage(const brainlink::Message& message) {
-    if (message.type != brainlink::Type::kReadings) {
-        ++stats_.echoes;
-        return;
-    }
     const std::optional<brainlink::Readings> readings = brainlink::decodeReadings(message);
     if (!readings) {
         return;
     }
-    if (!waiting_ || poll_.answered || message.id != id_) {
-        ++stats_.late_replies;
-        return;
+    const bool restart = contact_ && readings->boot_id != boot_id_;
+    if (contact_ && !restart) {
+        stats_.dropped += static_cast<uint8_t>(message.id - next_id_);
     }
-    poll_.answered    = true;
-    poll_.restarted   = contact_ && readings->boot_id != boot_id_;
+    if (restart) {
+        ++stats_.board_restarts;
+        poll_.restarted = true;
+    }
+    ++stats_.frames;
+    contact_  = true;
+    boot_id_  = readings->boot_id;
+    next_id_  = static_cast<uint8_t>(message.id + 1);
+
+    poll_.updated     = true;
     poll_.readings    = *readings;
     poll_.received_us = io_.now_us();
-    stats_.round_trip_us = static_cast<uint32_t>(poll_.received_us - sent_us_);
-    stats_.board_restarts += poll_.restarted ? 1 : 0;
-    ++stats_.replies;
-    contact_ = true;
-    boot_id_ = readings->boot_id;
+    last_frame_us_    = poll_.received_us;
 }
 
 const brainlink::Record* findRecord(const brainlink::Readings& readings, uint8_t sensor_type,
@@ -113,7 +74,7 @@ const brainlink::Record* findRecord(const brainlink::Readings& readings, uint8_t
 }
 
 std::optional<int32_t> encoderCount(const Poll& poll, uint8_t port) {
-    if (!poll.answered) {
+    if (!poll.updated) {
         return std::nullopt;
     }
     const brainlink::Record* r = findRecord(poll.readings, records::encoder::kSensorType, port);

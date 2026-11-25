@@ -1,20 +1,20 @@
 # locaGATR board firmware
 
 The control board program. It reads every sensor as fast as the loop runs and
-answers the Brain with the latest readings over RS-485. The pose is worked
-out on the Brain.
+streams the latest readings to the Brain over RS-485. The pose is worked out
+on the Brain.
 
 ```cpp
 void loop() {
-    const sensor_acquisition::SensorMap sensors = firmware::readSensors();      // 1. every sensor into one map
-    const brainlink::Exchange           brain   = firmware::answerBrain(sensors); // 2. GET_READINGS answered
-    firmware::logStatus(sensors, brain);                                          // 3. USB status, optional
-    firmware::blinkLed(brain);                                                    // 4. LED
+    const sensor_acquisition::SensorMap sensors = firmware::readSensors();       // 1. every sensor into one map
+    const brainlink::Stats&             link    = firmware::streamToBrain(sensors); // 2. a frame every 2 ms
+    firmware::logStatus(sensors, link);                                            // 3. USB status, optional
+    firmware::blinkLed();                                                          // 4. LED
 }
 ```
 
-The Pico's LED blinks slowly while the firmware runs and fast while the Brain
-is polling. Off or stuck: not running.
+The Pico's LED blinks once a second while the firmware runs. Off or stuck: not
+running.
 
 Brain end: [brain/locaGATR](../../brain/locaGATR/README.md).
 
@@ -33,7 +33,7 @@ This builds for a Pico 2. Original Pico: `pio run -e control_board_v1`.
 Status line, once a second:
 
 ```text
-locagatr boot=3F2A loops=180000/s requests=100 ignored=0 bad_bytes=0 left_out=0 | TW0=1520 | TW1=-87 | TW2=0
+locagatr boot=3F2A loops=180000/s frames=500/s left_out=0 | TW0=1520 | TW1=-87 | TW2=0
 ```
 
 ## Sensors
@@ -43,8 +43,9 @@ What is plugged in is [config.h](include/config.h):
 ```cpp
 inline sensor_acquisition::QuadratureEncoderSensor tw0({ports::kTW0});
 inline sensor_acquisition::QuadratureEncoderSensor tw1({ports::kTW1});
+inline sensor_acquisition::QuadratureEncoderSensor tw2({ports::kTW2});
 
-inline sensor_acquisition::Sensor* const kSensors[] = {&tw0, &tw1};
+inline sensor_acquisition::Sensor* const kSensors[] = {&tw0, &tw1, &tw2};
 ```
 
 Sensors not in the list are never started or read. Each config starts with
@@ -70,10 +71,10 @@ interrupts, so no edge is missed.
 
 ## Link
 
-| Brain sends | Board answers |
-|---|---|
-| GET_READINGS | READINGS: boot id, then one record per sensor |
-| anything else | ignored and counted |
+Every `kStreamPeriodUs` (2 ms) the board sends a READINGS frame: boot id, then
+one record per sensor. It never listens, so it drives the bus all the time.
+Baud and period are in [config.h](include/config.h); the Brain's baud must
+match.
 
 Frames, records, sensor types, health and timing:
 [protocol](../../docs/protocol.md). Code: [wire.h](include/brainlink/wire.h)
@@ -117,14 +118,14 @@ include/ports.h, config.h      connectors, what is plugged in
 sensor_acquisition/            step 1: Sensor, SensorMap, readAll
   sensors/                     one file pair per sensor
 records/                       record data per sensor type
-brainlink/                     wire format, responder (step 2), RS-485
+brainlink/                     wire format, streamer (step 2), RS-485
 firmware                       the steps
 src/main.cpp                   setup() and loop()
 ```
 
 Namespaces follow folders (`sensor_acquisition::`, `records::`,
 `brainlink::`); `sensors/` adds no level. `records/`, `brainlink/wire`,
-`brainlink/responder` and `sensor_acquisition` are portable and host tested.
+`brainlink/streamer` and `sensor_acquisition` are portable and host tested.
 
 ```sh
 cmake -S pico/locaGATR/tests -B build-locagatr-board-tests
